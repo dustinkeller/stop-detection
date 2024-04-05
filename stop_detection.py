@@ -2,16 +2,28 @@ import cv2
 import time
 from ultralytics import YOLO  # Assuming you have YOLOv5 installed
 from collections import defaultdict
+from easyocr import Reader
 import math
+# import matplotlib.pyplot as plt
 
 # Initialize YOLOv8 model (you can replace this with your custom trained model)
 model = YOLO('./detect/train5/weights/best.pt')
 
 # Initialize OCR (you can use Tesseract or another OCR library)
 def ocr_license_plate(image):
-    # Implement OCR logic here
-    # Return the license plate text
-    pass
+    reader = Reader(['en'])
+    cv2.threshold(image, 64, 225, cv2.THRESH_BINARY)
+    plate_info = []
+    result = reader.readtext(image)
+    for out in result:
+        _ , text, textScore = out
+        if(textScore > 0.4):
+            print(text, textScore)
+            plate_info.append(text)
+            # plt.imshow(image)
+            # plt.show()
+    return plate_info
+
 
 # Once a plate has been detected, calculate the speed once tracking ends
 def calculateSpeed(track, track_id):
@@ -77,9 +89,11 @@ while cap.isOpened():
                         # Save license plate image to a folder
                         filename = f"license_plate_{time.time()}.jpg"
                         cv2.imwrite(f"./license_plate_image/{filename}", license_plate_image)
+                        print(ocr_license_plate(cv2.cvtColor(license_plate_image, cv2.COLOR_BGR2GRAY)))
                         captured_ids.add(track_ids)  # Add the ID to the set of captured IDs
                         if(newPlate):
                             calculateSpeed(track, track_ids)
+                            print(f"Frame: {len(track)}")
 
     # Display the frame (you can modify this part for visualization)
     cv2.imshow("License Plate Detection", annotated_frame)
