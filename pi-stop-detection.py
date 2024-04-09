@@ -6,9 +6,6 @@ from easyocr import Reader
 from picamera2 import Picamera2
 import math
 
-from oauth2client.service_account import ServiceAccountCredentials
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
 import os
 import datetime
 
@@ -61,7 +58,7 @@ captured_ids = set()  # Set to store IDs for which license plate images have bee
 
 # Parameters for calculating speed
 fps = 10
-pixel_to_meter_ratio = 2890.95 # Adjust this value based on your camera calibration and scene setup
+pixel_to_meter_ratio = 1312.34 # Adjust this value based on your camera calibration and scene setup
 mph_threshold = 10  # Threshold speed in mph
 annotated_frame = 0
 res=(1536, 864)
@@ -84,11 +81,11 @@ video = cv2.VideoWriter(f"{datetime.datetime.now()}.avi", cv2.VideoWriter.fourcc
 # Loop to capture frames
 while True:
     try:
-        rawFrame = camera.capture_array()
         # Capture frame from the camera
-        #frame = cv2.cvtColor(rawFrame, cv2.COLOR_YUV420p2RGB)
+        frame = camera.capture_array()
+        
         # Detect license plates
-        results = model.track(rawFrame, conf=0.8, persist=True, verbose=False)
+        results = model.track(frame, conf=0.8, persist=True, verbose=False)
         
         # Check if there are any detections
         if results[0].boxes:
@@ -111,7 +108,7 @@ while True:
                 if len(track) > 3:
                     track.pop(0)
 
-                # Check if the y value for track[0] is smaller than track[2], if so then it is an approaching vehicle
+                # Check if the y value for track[0] is smaller than track[1], if so then it is an approaching vehicle
                 if len(track) >= 2 and track[0][1] < track[1][1]:
                     if track_ids not in captured_ids:  # Check if image for this ID has already been captured
                         newPlate = True
@@ -130,26 +127,6 @@ while True:
             
     except KeyboardInterrupt:
         break
-        # Display the frame (you can modify this part for visualization)
-        # cv2.imshow("License Plate Detection", annotated_frame)
-        
-    # if cv2.waitKey(1) & 0xFF == ord('q'):
-    #     break
-
-# cv2.destroyAllWindows()
-
-# Your Google Drive credentials file (service account key)
-# SERVICE_ACCOUNT_FILE = os.getenv("API")
-
-# Function to upload files to Google Drive folder
-# def upload_to_drive(files, folder_id):
-#     credentials = ServiceAccountCredentials.from_json_keyfile_name(SERVICE_ACCOUNT_FILE, scopes=['https://www.googleapis.com/auth/drive'])
-#     drive_service = build('drive', 'v3', credentials=credentials)
-    
-#     for file in files:
-#         file_metadata = {'name': file, 'parents': [folder_id]}
-#         media = MediaFileUpload(file, resumable=True)
-#         drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
 
 # Get a list of image files in the license_plate_images folder
 image_files = [f for f in os.listdir("license_plate_image") if f.endswith(".jpg")]
@@ -160,7 +137,4 @@ for image_file in image_files:
     true_img = cv2.imread(f"license_plate_image/{image_file}")
     ocr_license_plate(cv2.cvtColor(true_img, cv2.COLOR_BGR2GRAY),timestamp)
     ocr_file = f"ocr_results_{timestamp}.txt"
-    # if os.path.exists(os.path.join("license_plate_ocr", ocr_file), timestamp):
-    #     files_to_upload = [os.path.join("license_plate_image", image_file), os.path.join("license_plate_ocr", ocr_file)]
-    #     # Upload the files to Google Drive
-    #     upload_to_drive(files_to_upload, os.getenv("FOLDER_ID"))
+
