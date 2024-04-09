@@ -58,7 +58,7 @@ captured_ids = set()  # Set to store IDs for which license plate images have bee
 
 # Parameters for calculating speed
 fps = 10
-pixel_to_meter_ratio = 1312.34 # Adjust this value based on your camera calibration and scene setup
+pixel_to_meter_ratio = 1312.34 # Based on camera calibration/scene setup
 mph_threshold = 10  # Threshold speed in mph
 annotated_frame = 0
 res=(1536, 864)
@@ -84,7 +84,7 @@ while True:
         # Capture frame from the camera
         frame = camera.capture_array()
         
-        # Detect license plates
+        # Run model inference on frame to track any license plates
         results = model.track(frame, conf=0.8, persist=True, verbose=False)
         
         # Check if there are any detections

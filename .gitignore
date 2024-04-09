@@ -1,4 +1,9 @@
+.venv
 .env
+.vscode
 license_plate_image
 license_plate_ocr
 key.json
+test-stop-sign.mp4
+test2.mov
+test3.mov
