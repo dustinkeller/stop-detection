@@ -61,9 +61,11 @@ def calculate_pixel_to_meter_ratio(frame_width, frame_height):
 
 
 
-# Capture video from camera (or load video file)
-# cap = cv2.VideoCapture(1)  # Camera index 0 for default webcam
-cap = cv2.VideoCapture("./test-stop-sign.mp4")
+# Capture video from camera
+cap = cv2.VideoCapture(1)  # Camera index 0 for default webcam
+
+# Capturing from a video file
+# cap = cv2.VideoCapture("./test-stop-sign.mp4")
 
 # Store the track history
 track_history = defaultdict(lambda: [])
